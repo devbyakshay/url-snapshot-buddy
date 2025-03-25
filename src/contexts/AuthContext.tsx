@@ -3,6 +3,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User } from '../types/api';
 import { toast } from 'sonner';
 
+// Import the API_BASE_URL
+const API_BASE_URL = 'http://localhost:8000';
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -28,11 +31,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const response = await fetch('/auth/verify-token', {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-token`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        mode: 'cors',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -62,12 +67,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       formData.append('username', username);
       formData.append('password', password);
 
-      const response = await fetch('/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData
+        body: formData,
+        mode: 'cors',
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -91,12 +98,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ username, email, password }),
+        mode: 'cors',
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -119,11 +128,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch('/auth/logout', {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
-          }
+          },
+          mode: 'cors',
+          credentials: 'include'
         });
       }
     } catch (error) {
