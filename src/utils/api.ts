@@ -1,4 +1,3 @@
-
 import { User, URLShortenRequest, URLShortenResponse, ShortenedURLDetail, QRCodeDetail, AnalyticsData, GeoAnalyticsData } from '../types/api';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -15,7 +14,11 @@ const getAuthHeaders = () => {
 // Generic fetch function with error handling
 const fetchWithErrorHandling = async (url: string, options: RequestInit) => {
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(url, {
+      ...options,
+      mode: 'cors',
+      credentials: 'include'
+    });
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
@@ -47,9 +50,7 @@ export const shortenUrl = async (urlData: URLShortenRequest): Promise<URLShorten
   return fetchWithErrorHandling(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(urlData),
-    mode: 'cors',
-    credentials: 'include'
+    body: JSON.stringify(urlData)
   });
 };
 
@@ -62,9 +63,7 @@ export const getUserUrls = async (skip = 0, limit = 10, search?: string): Promis
   
   return fetchWithErrorHandling(url, {
     method: 'GET',
-    headers: getAuthHeaders(),
-    mode: 'cors',
-    credentials: 'include'
+    headers: getAuthHeaders()
   });
 };
 

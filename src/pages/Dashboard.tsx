@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,17 +10,36 @@ import { BarChart, AreaChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { toast } from 'sonner';
 import { CopyIcon, ExternalLink, Link2, QrCode, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const [url, setUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated, checkAuth } = useAuth();
+  
+  // Ensure authentication is checked before fetching data
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkAuth();
+    }
+  }, [isAuthenticated, checkAuth]);
 
-  const { data: userUrls, isLoading, refetch } = useQuery({
+  const { data: userUrls, isLoading, refetch, error } = useQuery({
     queryKey: ['userUrls'],
     queryFn: () => getUserUrls(0, 5),
+    enabled: isAuthenticated,
+    retry: 3,
+    retryDelay: 1000,
   });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching URLs:', error);
+      toast.error('Failed to load URLs. Please try again.');
+    }
+  }, [error]);
 
   const handleShortenUrl = async (e: React.FormEvent) => {
     e.preventDefault();

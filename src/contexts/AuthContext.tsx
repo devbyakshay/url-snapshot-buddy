@@ -34,7 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch(`${API_BASE_URL}/auth/verify-token`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
         mode: 'cors',
         credentials: 'include'
@@ -42,7 +43,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData);
+        setUser({
+          id: userData.id || 1, // Default id if not provided
+          username: userData.sub || userData.username || 'User',
+          email: userData.email || 'user@example.com',
+          plan_type: userData.plan_type || 'free'
+        });
       } else {
         localStorage.removeItem('token');
         setUser(null);
@@ -84,7 +90,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await response.json();
       localStorage.setItem('token', data.access_token);
-      await checkAuth();
+      
+      // Create a basic user object from the JWT token
+      const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+      setUser({
+        id: payload.id || 1, // Default id if not provided
+        username: payload.sub || username,
+        email: payload.email || 'user@example.com',
+        plan_type: payload.plan_type || 'free'
+      });
+      
       toast.success('Login successful!');
     } catch (error) {
       console.error('Login error:', error);

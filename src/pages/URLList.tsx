@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,17 +9,36 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { CopyIcon, ExternalLink, Search, QrCode, Link2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const URLList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const limit = 10;
   const navigate = useNavigate();
+  const { isAuthenticated, checkAuth } = useAuth();
+  
+  // Ensure authentication is checked before fetching data
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkAuth();
+    }
+  }, [isAuthenticated, checkAuth]);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch, error } = useQuery({
     queryKey: ['userUrls', page, searchTerm],
     queryFn: () => getUserUrls(page * limit, limit, searchTerm || undefined),
+    enabled: isAuthenticated,
+    retry: 3,
+    retryDelay: 1000,
   });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching URLs:', error);
+      toast.error('Failed to load URLs. Please try again.');
+    }
+  }, [error]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
