@@ -1,7 +1,6 @@
-
 import { User, URLShortenRequest, URLShortenResponse, ShortenedURLDetail, QRCodeDetail, AnalyticsData, GeoAnalyticsData } from '../types/api';
 
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Helper function to include auth token
 const getAuthHeaders = () => {
