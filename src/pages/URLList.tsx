@@ -16,20 +16,14 @@ const URLList = () => {
   const [page, setPage] = useState(0);
   const limit = 10;
   const navigate = useNavigate();
-  const { isAuthenticated, checkAuth } = useAuth();
+  const { isAuthenticated, getToken } = useAuth();
   
-  // Ensure authentication is checked before fetching data
-  useEffect(() => {
-    if (isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
-
+  // Fetch URLs directly when the component loads, not dependent on auth changes
   const { data, isLoading, refetch, error } = useQuery({
     queryKey: ['userUrls', page, searchTerm],
     queryFn: () => getUserUrls(page * limit, limit, searchTerm || undefined),
-    enabled: isAuthenticated,
-    retry: 3,
+    enabled: !!getToken(), // Only run when token exists
+    retry: 1, // Reduce number of retries
     retryDelay: 1000,
   });
 
@@ -39,6 +33,13 @@ const URLList = () => {
       toast.error('Failed to load URLs. Please try again.');
     }
   }, [error]);
+
+  // Refetch on page changes
+  useEffect(() => {
+    if (getToken()) {
+      refetch();
+    }
+  }, [page, refetch]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

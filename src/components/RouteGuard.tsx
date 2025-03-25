@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,8 +9,16 @@ interface RouteGuardProps {
 }
 
 const RouteGuard: React.FC<RouteGuardProps> = ({ children, requireAuth = true }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, checkAuth } = useAuth();
   const location = useLocation();
+
+  // Check auth once on route change
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      checkAuth();
+    }
+  }, [location.pathname, checkAuth]);
 
   if (isLoading) {
     return (

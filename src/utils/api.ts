@@ -6,7 +6,7 @@ const API_BASE_URL = 'http://localhost:8000';
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
-    'Authorization': `Bearer ${token}`,
+    'Authorization': token ? `Bearer ${token}` : '',
     'Content-Type': 'application/json'
   };
 };
@@ -146,7 +146,13 @@ export const getGeoAnalytics = async (shortCode: string): Promise<GeoAnalyticsDa
   });
 };
 
-// Get QR code image
+// Get QR code image - updated to work without authentication
 export const getQrCodeImage = (shortCode: string): string => {
   return `${API_BASE_URL}/qr/${shortCode}`;
+};
+
+// Get authenticated QR code image - when auth is needed
+export const getAuthenticatedQrCodeImage = (shortCode: string): string => {
+  const token = localStorage.getItem('token');
+  return `${API_BASE_URL}/qr/${shortCode}?token=${token}`;
 };

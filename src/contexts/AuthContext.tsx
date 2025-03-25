@@ -14,6 +14,7 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  getToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,13 +22,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+
+  const getToken = () => localStorage.getItem('token');
 
   const checkAuth = async () => {
+    // Prevent multiple simultaneous auth checks
+    if (isCheckingAuth) return;
+    
     try {
-      const token = localStorage.getItem('token');
+      setIsCheckingAuth(true);
+      const token = getToken();
       if (!token) {
         setUser(null);
         setIsLoading(false);
+        setIsCheckingAuth(false);
         return;
       }
 
@@ -60,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
     } finally {
       setIsLoading(false);
+      setIsCheckingAuth(false);
     }
   };
 
@@ -172,7 +182,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       register, 
       logout,
-      checkAuth
+      checkAuth,
+      getToken
     }}>
       {children}
     </AuthContext.Provider>

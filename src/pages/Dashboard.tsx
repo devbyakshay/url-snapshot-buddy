@@ -17,20 +17,13 @@ const Dashboard = () => {
   const [customCode, setCustomCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, checkAuth } = useAuth();
-  
-  // Ensure authentication is checked before fetching data
-  useEffect(() => {
-    if (isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  const { isAuthenticated, getToken } = useAuth();
 
   const { data: userUrls, isLoading, refetch, error } = useQuery({
     queryKey: ['userUrls'],
     queryFn: () => getUserUrls(0, 5),
-    enabled: isAuthenticated,
-    retry: 3,
+    enabled: !!getToken(), // Only fetch when token exists
+    retry: 1, // Reduce number of retries
     retryDelay: 1000,
   });
 
@@ -40,6 +33,13 @@ const Dashboard = () => {
       toast.error('Failed to load URLs. Please try again.');
     }
   }, [error]);
+
+  // Initial data fetch when token is available
+  useEffect(() => {
+    if (getToken()) {
+      refetch();
+    }
+  }, [refetch]);
 
   const handleShortenUrl = async (e: React.FormEvent) => {
     e.preventDefault();
