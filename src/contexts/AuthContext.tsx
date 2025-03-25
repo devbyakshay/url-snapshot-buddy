@@ -47,7 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: userData.id || 1, // Default id if not provided
           username: userData.sub || userData.username || 'User',
           email: userData.email || 'user@example.com',
-          plan_type: userData.plan_type || 'free'
+          plan_type: userData.plan_type || 'free',
+          is_active: userData.is_active !== undefined ? userData.is_active : true // Add is_active field
         });
       } else {
         localStorage.removeItem('token');
@@ -97,7 +98,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: payload.id || 1, // Default id if not provided
         username: payload.sub || username,
         email: payload.email || 'user@example.com',
-        plan_type: payload.plan_type || 'free'
+        plan_type: payload.plan_type || 'free',
+        is_active: payload.is_active !== undefined ? payload.is_active : true // Add is_active field
       });
       
       toast.success('Login successful!');
